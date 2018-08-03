@@ -131,12 +131,6 @@ class Core
         return $args;
     }
 
-    public function heartbeat_settings($settings)
-    {
-        $settings['interval'] = 120; //Anything between 15-60
-        return $settings;
-    }
-
     public function wildCardIt($s)
     {
         return $s;
