@@ -1,0 +1,53 @@
+language: php
+sudo: false
+dist: trusty
+
+stages:
+  - test
+  - style
+  - coverage
+  - deploy
+
+
+env:
+  - WP_VERSION=latest
+  - WP_VERSION=trunk
+php:
+  - 7.2
+  - 7.1
+
+services:
+  - mysql
+
+cache:
+  directories:
+    - $HOME/.composer/cache/files
+
+before_install:
+  - phpenv config-rm xdebug.ini
+  - composer self-update
+  - composer global require hirak/prestissimo
+  - bin/install-wp-tests.sh wordpress_test root '' 127.0.0.1 $WP_VERSION
+  - travis_retry travis_wait composer install --no-interaction 
+
+
+# travis launches phpunit itself in the testing stage according to php setups
+# test stage script
+script:
+  - vendor/phpunit/phpunit/phpunit -v --colors=always
+
+
+jobs:
+  include:
+    - stage: style
+      script: 
+        - composer cs-check
+      env: CS-FIXER=true
+
+    - stage: coverage
+      php: 7.1
+      script: 
+        - phpdbg -qrr vendor/bin/phpunit --coverage-clover clover.xml
+      after_success:
+        - vendor/bin/ocular code-coverage:upload --format=php-clover clover.xml --revision=$TRAVIS_COMMIT
+
