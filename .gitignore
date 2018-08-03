@@ -1,0 +1,4 @@
+vendor/
+/composer.lock
+wp-content
+.php_cs.cache
