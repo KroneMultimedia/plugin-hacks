@@ -28,6 +28,9 @@ class Core
 
     public function add_actions()
     {
+        //Disable ACF fields that are from DB - improves performance a lot
+        add_filter('posts_pre_query', [$this, 'acf_posts_pre_query'], 15, 2);
+
         //Remove Gutenberg Markting spam
         remove_action('try_gutenberg_panel', 'wp_try_gutenberg_panel');
         //Elastic Search
@@ -92,6 +95,26 @@ class Core
         add_filter('media_library_show_video_playlist', function () {
             return false;
         });
+    }
+
+    //ACF querie disable
+    //
+    public function debug_enabled()
+    {
+        if (defined('WP_DEBUG') && WP_DEBUG == true) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function acf_posts_pre_query($posts, \WP_Query $query)
+    {
+        if (is_object($query) && property_exists($query, 'query_vars') && $query->query_vars['post_type'] == 'acf-field-group' && ! $this->debug_enabled()) {
+            return [];
+        }
+
+        return $posts;
     }
 
     //Heartbeat
