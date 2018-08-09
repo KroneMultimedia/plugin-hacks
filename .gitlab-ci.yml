@@ -85,16 +85,16 @@ release:publish:
   - beta
   - master
 
-#svn update:
-#  image: gitlab.krone.at:5000/krn/backend:beta
-#  dependencies: ["release:publish"]
-#  stage: wordpress.org
-#  script:
-#  - bin/deploy-to-wp.sh $(cat latest_release.txt) kmm-hacks
-#  tags:
-#  - docker
-#  only:
-#  - master
+svn update:
+  image: gitlab.krone.at:5000/krn/backend:beta
+  dependencies: ["release:publish"]
+  stage: wordpress.org
+  script:
+  - bin/deploy-to-wp.sh $(cat latest_release.txt) kmm-hacks
+  tags:
+  - docker
+  only:
+  - master
 
 
 
