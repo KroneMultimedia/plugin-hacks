@@ -38,6 +38,11 @@ class Core
         add_filter('ep_formatted_args', [$this, 'ep_formatted_args'], 1, 1);
         add_filter('ep_index_post_request_args', [$this, 'ep_index_post_request_args'], 1, 2);
         add_filter('ep_index_post_request_path', [$this, 'ep_index_post_request_path'], 1, 2);
+
+        //workaround: https://github.com/10up/ElasticPress/pull/1158
+        add_filter('ep_post_sync_args', [$this, 'ep_post_sync_args'], 10, 2);
+
+
         /// ELASITC PRESS
 
         add_filter('acp/filtering/cache/seconds', function ($seconds) {
@@ -97,6 +102,12 @@ class Core
         });
     }
 
+    public function ep_post_sync_args($args, $post_id)
+    {
+        $args['comment_status'] = absint($args['comment_status']);
+        $args['ping_status'] = absint($args['ping_status']);
+        return $args;
+    }
     //ACF querie disable
     //
     public function debug_enabled()
@@ -177,10 +188,10 @@ class Core
         $new['query_string'] = $new['multi_match'];
         $new['query_string']['query'] = $this->wildCardIt($new['query_string']['query']);
         $new['query_string']['query'] = str_replace(
-                                        ['\\',    '+',  '-',  '&',  '|',  '!',  '(',  ')',  '{',  '}',  '[',  ']',  '^',  '~',  '?',  ':'],
-                                                  ['\\\\', "\+", "\-", "\&", "\|", "\!", "\(", "\)", "\{", "\}", "\[", "\]", "\^", "\~", "\?", "\:"],
-                                                            $new['query_string']['query']
-                                                                  );
+            ['\\',    '+',  '-',  '&',  '|',  '!',  '(',  ')',  '{',  '}',  '[',  ']',  '^',  '~',  '?',  ':'],
+            ['\\\\', "\+", "\-", "\&", "\|", "\!", "\(", "\)", "\{", "\}", "\[", "\]", "\^", "\~", "\?", "\:"],
+            $new['query_string']['query']
+        );
         $new['query_string']['analyze_wildcard'] = true;
         unset($new['query_string']['type']);
         $new['query_string']['fields'] = ['post_title'];
