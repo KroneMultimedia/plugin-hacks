@@ -33,6 +33,13 @@ class Core
 
         //Remove Gutenberg Markting spam
         remove_action('try_gutenberg_panel', 'wp_try_gutenberg_panel');
+
+        //Disable Gutenberg completly
+			  add_filter('use_block_editor_for_post', '__return_false', 10);
+
+				// disable for post types
+				add_filter('use_block_editor_for_post_type', '__return_false', 10);
+
         //Elastic Search
         //Reformat the query to support wildcards and order by date
         add_filter('ep_formatted_args', [$this, 'ep_formatted_args'], 1, 1);
