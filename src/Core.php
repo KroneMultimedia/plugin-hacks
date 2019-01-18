@@ -26,6 +26,13 @@ class Core
     {
     }
 
+    public function ep_bulk_index_posts_request_args($args, $body)
+    {
+        $args['timeout'] = 300000;
+
+        return $args;
+    }
+
     public function add_actions()
     {
         //Disable ACF fields that are from DB - improves performance a lot
@@ -45,10 +52,10 @@ class Core
         add_filter('ep_formatted_args', [$this, 'ep_formatted_args'], 1, 1);
         add_filter('ep_index_post_request_args', [$this, 'ep_index_post_request_args'], 1, 2);
         add_filter('ep_index_post_request_path', [$this, 'ep_index_post_request_path'], 1, 2);
+        add_filter('ep_bulk_index_posts_request_args', [$this, 'ep_bulk_index_posts_request_args'], 10, 2);
 
         //workaround: https://github.com/10up/ElasticPress/pull/1158
         add_filter('ep_post_sync_args', [$this, 'ep_post_sync_args'], 10, 2);
-
 
         /// ELASITC PRESS
 
@@ -113,8 +120,10 @@ class Core
     {
         $args['comment_status'] = absint($args['comment_status']);
         $args['ping_status'] = absint($args['ping_status']);
+
         return $args;
     }
+
     //ACF querie disable
     //
     public function debug_enabled()
