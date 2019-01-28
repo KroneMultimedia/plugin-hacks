@@ -54,6 +54,8 @@ class Core
         add_filter('ep_index_post_request_path', [$this, 'ep_index_post_request_path'], 1, 2);
         add_filter('ep_bulk_index_posts_request_args', [$this, 'ep_bulk_index_posts_request_args'], 10, 2);
 
+        add_filter('ep_config_mapping', [$this, 'ep_config_mapping']);
+
         //workaround: https://github.com/10up/ElasticPress/pull/1158
         add_filter('ep_post_sync_args', [$this, 'ep_post_sync_args'], 10, 2);
 
@@ -193,6 +195,43 @@ class Core
         return join($fin, ' ');
     }
 
+    public function ep_config_mapping($mapping) {
+
+$mapping['settings']['analysis']['analyzer']['default']['filter'] = [  'standard','lowercase', 'edge_ngram'];
+$mapping['settings']['analysis']['filter']['edge_ngram']['min_gram'] =  3;
+$mapping['settings']['analysis']['filter']['edge_ngram']['max_gram'] =  128; //(quite bit but we're happy with this)
+return $mapping;
+      //Create custom ngram index
+      $mapping['settings']['analysis']['analyzer']['my_index_analyzer'] = array(
+		'type' => 'custom',
+		'tokenizer' => 'standard',
+		'filter' => array(
+			'lowercase',
+			'mynGram',
+		),
+	);
+
+      $mapping['settings']['analysis']['analyzer']['my_search_analyzer'] = array(
+		'type' => 'custom',
+		'tokenizer' => 'standard',
+		'filter' => array(
+      'standard',
+			'lowercase',
+			'mynGram',
+		),
+	);
+
+      $mapping['settings']['analysis']['filter']['mynGram'] = array(
+		'type' => 'nGram',
+    'min_gram' => 1,
+    'max_gram'=> 3
+	);
+
+ $mapping['settings']['analysis']['analyzer']['default']['filter'][] = 'mynGram';
+
+
+      return $mapping;
+    }
     public function ep_formatted_args($args)
     {
         if (! array_key_exists('bool', $args['query'])) {
@@ -202,16 +241,19 @@ class Core
         unset($args['query']['bool']['should']);
         $new = $args['query']['bool']['must'][0];
         $new['query_string'] = $new['multi_match'];
-        $new['query_string']['query'] = $this->wildCardIt($new['query_string']['query']);
+//        $new['query_string']['query'] = $this->wildCardIt($new['query_string']['query']);
         $new['query_string']['query'] = str_replace(
             ['\\',    '+',  '-',  '&',  '|',  '!',  '(',  ')',  '{',  '}',  '[',  ']',  '^',  '~',  '?',  ':'],
             ['\\\\', "\+", "\-", "\&", "\|", "\!", "\(", "\)", "\{", "\}", "\[", "\]", "\^", "\~", "\?", "\:"],
             $new['query_string']['query']
         );
         $new['query_string']['analyze_wildcard'] = true;
+        $new['query_string']['fuzziness'] = 5;
+        //$new['query_string']['analyzer'] = 'edge_ngram_analyzer';
+        //$new['query_string']['analyzer'] = 'edge_ngram';
         unset($new['query_string']['type']);
         $new['query_string']['fields'] = ['post_title'];
-        $new['query_string']['boost'] = 10;
+        //$new['query_string']['boost'] = 10;
         $new['query_string']['default_operator'] = 'AND';
         unset($new['multi_match']);
         unset($new['type']);
@@ -224,6 +266,25 @@ class Core
         }
         $args['sort'] = ['post_date' => ['order' => 'desc']];
 
+        //Simplifie as fuck
+        //
+        $nq = (object) [
+          'query_string' => (object)[
+            'default_field' => 'post_title.post_title',
+            "query" => $new['query_string']['query'],
+            'default_operator' => 'AND',
+            "analyze_wildcard" => true,
+            "fuzziness" => 5
+
+          ]
+        ];
+        //Reset
+        unset($args['query']);
+        $args['query'] = $nq;
+
+
+        //echo "<pre>";
+        //echo json_encode($args, JSON_PRETTY_PRINT);
         return $args;
     }
 
