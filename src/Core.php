@@ -54,6 +54,8 @@ class Core
         add_filter('ep_index_post_request_path', [$this, 'ep_index_post_request_path'], 1, 2);
         add_filter('ep_bulk_index_posts_request_args', [$this, 'ep_bulk_index_posts_request_args'], 10, 2);
 
+        add_filter('ep_config_mapping', [$this, 'ep_config_mapping']);
+
         //workaround: https://github.com/10up/ElasticPress/pull/1158
         add_filter('ep_post_sync_args', [$this, 'ep_post_sync_args'], 10, 2);
 
@@ -183,48 +185,72 @@ class Core
 
     public function wildCardIt($s)
     {
-        return $s;
+        if($this->isExtenendEPQuery($s)) {
+          return $s;
+        }
         $w = explode(' ', $s);
         $fin = [];
         foreach ($w as $word) {
-            $fin[] = '*' . $word . '*';
+          $fin[] = '/.*' . $word . '.*/';
         }
 
         return join($fin, ' ');
     }
 
+    public function ep_config_mapping($mapping)
+    {
+
+/*
+ * 
+$mapping['settings']['analysis']['analyzer']['default']['filter'] = [  'standard','lowercase', 'edge_ngram'];
+$mapping['settings']['analysis']['filter']['edge_ngram']['min_gram'] =  3;
+$mapping['settings']['analysis']['filter']['edge_ngram']['max_gram'] =  128; //(quite bit but we're happy with this)
+ */
+        return $mapping;
+    }
     public function ep_formatted_args($args)
     {
         if (! array_key_exists('bool', $args['query'])) {
             return $args;
         }
-        $args['query']['bool']['must'] = $args['query']['bool']['should'];
-        unset($args['query']['bool']['should']);
-        $new = $args['query']['bool']['must'][0];
-        $new['query_string'] = $new['multi_match'];
-        $new['query_string']['query'] = $this->wildCardIt($new['query_string']['query']);
-        $new['query_string']['query'] = str_replace(
+
+        //Simplifie as fuck
+        //
+        $qs = $args['query']['bool']['should'][0]['multi_match']['query'];
+        $qs = $this->wildCardIt($qs);
+        $qs = $this->sanitizeEPQuery($qs);
+        $nq =  [
+          'query_string' => [
+            'default_field' => 'post_title.post_title',
+            "query" => $qs,  
+            'default_operator' => 'AND',
+            "analyze_wildcard" => true,
+            "fuzziness" => 5
+
+          ]
+        ];
+        //Reset
+        unset($args['query']);
+        $args['query'] = $nq;
+
+        //echo "<pre>";
+        //echo json_encode($args);
+        //exit;
+        return $args;
+    }
+    public function sanitizeEPQuery($q) {
+      if($this->isExtenendEPQuery($q)) {
+        return preg_replace("#^\!#", "", $q);
+      }
+       return str_replace(
             ['\\',    '+',  '-',  '&',  '|',  '!',  '(',  ')',  '{',  '}',  '[',  ']',  '^',  '~',  '?',  ':'],
             ['\\\\', "\+", "\-", "\&", "\|", "\!", "\(", "\)", "\{", "\}", "\[", "\]", "\^", "\~", "\?", "\:"],
-            $new['query_string']['query']
+            $q
         );
-        $new['query_string']['analyze_wildcard'] = true;
-        unset($new['query_string']['type']);
-        $new['query_string']['fields'] = ['post_title'];
-        $new['query_string']['boost'] = 10;
-        $new['query_string']['default_operator'] = 'AND';
-        unset($new['multi_match']);
-        unset($new['type']);
-        array_unshift($args['query']['bool']['must'], $new);
 
-        foreach ($args['query']['bool']['must'] as $idx => &$r) {
-            if (isset($r['multi_match'])) {
-                unset($args['query']['bool']['must'][$idx]);
-            }
-        }
-        $args['sort'] = ['post_date' => ['order' => 'desc']];
-
-        return $args;
+    }
+    public function isExtenendEPQuery($q) {
+      return preg_match("#^\!#", $q);
     }
 
     /*
