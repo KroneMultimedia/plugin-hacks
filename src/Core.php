@@ -65,6 +65,9 @@ class Core
             return 86400 * 30;
         });
 
+        //FIX OLD/legacy ACF entries that used to have double encoded values
+        add_filter('acf/load_value', [$this, 'acf_load_value'], 10, 3);
+
         //Disable comment count in admin-navigation
         if (is_admin()) {
             add_filter('wp_count_comments', function ($counts, $post_id) {
@@ -116,6 +119,11 @@ class Core
         add_filter('media_library_show_video_playlist', function () {
             return false;
         });
+    }
+
+    public function acf_load_value($value, $post_id, $field)
+    {
+        return maybe_unserialize($value);
     }
 
     public function ep_post_sync_args($args, $post_id)
@@ -185,13 +193,13 @@ class Core
 
     public function wildCardIt($s)
     {
-        if($this->isExtenendEPQuery($s)) {
-          return $s;
+        if ($this->isExtenendEPQuery($s)) {
+            return $s;
         }
         $w = explode(' ', $s);
         $fin = [];
         foreach ($w as $word) {
-          $fin[] = '/.*' . $word . '.*/';
+            $fin[] = '/.*' . $word . '.*/';
         }
 
         return join($fin, ' ');
@@ -199,15 +207,15 @@ class Core
 
     public function ep_config_mapping($mapping)
     {
-
-/*
- * 
-$mapping['settings']['analysis']['analyzer']['default']['filter'] = [  'standard','lowercase', 'edge_ngram'];
-$mapping['settings']['analysis']['filter']['edge_ngram']['min_gram'] =  3;
-$mapping['settings']['analysis']['filter']['edge_ngram']['max_gram'] =  128; //(quite bit but we're happy with this)
- */
+        /*
+         *
+        $mapping['settings']['analysis']['analyzer']['default']['filter'] = [  'standard','lowercase', 'edge_ngram'];
+        $mapping['settings']['analysis']['filter']['edge_ngram']['min_gram'] =  3;
+        $mapping['settings']['analysis']['filter']['edge_ngram']['max_gram'] =  128; //(quite bit but we're happy with this)
+         */
         return $mapping;
     }
+
     public function ep_formatted_args($args)
     {
         if (! array_key_exists('bool', $args['query'])) {
@@ -219,15 +227,14 @@ $mapping['settings']['analysis']['filter']['edge_ngram']['max_gram'] =  128; //(
         $qs = $args['query']['bool']['should'][0]['multi_match']['query'];
         $qs = $this->wildCardIt($qs);
         $qs = $this->sanitizeEPQuery($qs);
-        $nq =  [
+        $nq = [
           'query_string' => [
             'default_field' => 'post_title.post_title',
-            "query" => $qs,  
+            'query' => $qs,
             'default_operator' => 'AND',
-            "analyze_wildcard" => true,
-            "fuzziness" => 5
-
-          ]
+            'analyze_wildcard' => true,
+            'fuzziness' => 5,
+          ],
         ];
         //Reset
         unset($args['query']);
@@ -238,19 +245,23 @@ $mapping['settings']['analysis']['filter']['edge_ngram']['max_gram'] =  128; //(
         //exit;
         return $args;
     }
-    public function sanitizeEPQuery($q) {
-      if($this->isExtenendEPQuery($q)) {
-        return preg_replace("#^\!#", "", $q);
-      }
-       return str_replace(
+
+    public function sanitizeEPQuery($q)
+    {
+        if ($this->isExtenendEPQuery($q)) {
+            return preg_replace("#^\!#", '', $q);
+        }
+
+        return str_replace(
             ['\\',    '+',  '-',  '&',  '|',  '!',  '(',  ')',  '{',  '}',  '[',  ']',  '^',  '~',  '?',  ':'],
             ['\\\\', "\+", "\-", "\&", "\|", "\!", "\(", "\)", "\{", "\}", "\[", "\]", "\^", "\~", "\?", "\:"],
             $q
         );
-
     }
-    public function isExtenendEPQuery($q) {
-      return preg_match("#^\!#", $q);
+
+    public function isExtenendEPQuery($q)
+    {
+        return preg_match("#^\!#", $q);
     }
 
     /*
