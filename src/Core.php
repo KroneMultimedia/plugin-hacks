@@ -49,10 +49,11 @@ class Core
 
         //Disable KMM KRoN in json requests
         add_filter('krn_kron_enabled', function () {
-            if (defined('REST_REQUEST') && REST_REQUEST // (#1)
-             || isset($_GET['rest_route'])) {
+            if (apply_filters('krn_is_rest_api_request', false)) {
                 return false;
             }
+
+            return true;
         });
 
         //Elastic Search
