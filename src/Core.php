@@ -47,6 +47,15 @@ class Core
         // disable for post types
         add_filter('use_block_editor_for_post_type', '__return_false', 10);
 
+        //Disable KMM KRoN in json requests
+        add_filter('krn_kron_enabled', function () {
+            if (apply_filters('krn_is_rest_api_request', false)) {
+                return false;
+            }
+
+            return true;
+        });
+
         //Elastic Search
         //Reformat the query to support wildcards and order by date
         add_filter('ep_formatted_args', [$this, 'ep_formatted_args'], 1, 1);
