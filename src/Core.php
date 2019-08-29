@@ -35,6 +35,8 @@ class Core
 
     public function add_actions()
     {
+        remove_action('init', 'wp_widgets_init', 1);
+
         //Disable ACF fields that are from DB - improves performance a lot
         add_filter('posts_pre_query', [$this, 'acf_posts_pre_query'], 15, 2);
 
