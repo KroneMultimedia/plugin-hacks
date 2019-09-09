@@ -213,7 +213,7 @@ class Core
             $fin[] = '/.*' . $word . '.*/';
         }
 
-        return join($fin, ' ');
+        return join(' ', $fin);
     }
 
     public function ep_config_mapping($mapping)
