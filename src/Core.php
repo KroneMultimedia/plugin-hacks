@@ -70,6 +70,15 @@ class Core
         //workaround: https://github.com/10up/ElasticPress/pull/1158
         add_filter('ep_post_sync_args', [$this, 'ep_post_sync_args'], 10, 2);
 
+        add_filter('ep_post_sync_kill', function ($v, $args, $id) {
+            return true;
+        }, 999, 3);
+
+        add_filter('save_post', [$this, 'krn_index_object'], 9999, 1);
+        //add_action( 'wp_insert_post', array( $this, 'krn_index_object_w' ), 999, 3 );
+        add_action('add_attachment', [$this, 'krn_index_object_w'], 999, 3);
+        add_action('edit_attachment', [$this, 'krn_index_object_w'], 999, 3);
+
         /// ELASITC PRESS
 
         add_filter('acp/filtering/cache/seconds', function ($seconds) {
@@ -130,6 +139,28 @@ class Core
         add_filter('media_library_show_video_playlist', function () {
             return false;
         });
+    }
+
+    public function krn_index_object_w($a, $b = null, $c = null)
+    {
+        $this->krn_index_object($a);
+    }
+
+    public function krn_index_object($post_id)
+    {
+        $blocking = true;
+        $post = get_post($post_id);
+        if ($post->post_status == 'auto-draft') {
+            return;
+        }
+        if ($post->post_status == 'draft') {
+            return;
+        }
+        if (empty($post)) {
+            return false;
+        }
+        $post_args = ep_prepare_post($post_id);
+        $response = ep_index_post($post_args, $blocking);
     }
 
     public function acf_load_value($value, $post_id, $field)
