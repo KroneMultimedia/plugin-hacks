@@ -148,6 +148,10 @@ class Core
 
     public function krn_index_object($post_id)
     {
+        if(!function_exists("ep_prepare_post")) {
+            //No elasticpress installed
+            return;
+        }
         $blocking = true;
         $post = get_post($post_id);
         if ($post->post_status == 'auto-draft') {
