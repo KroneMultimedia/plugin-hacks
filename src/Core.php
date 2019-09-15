@@ -148,7 +148,7 @@ class Core
 
     public function krn_index_object($post_id)
     {
-        if(!function_exists("ep_prepare_post")) {
+        if (! function_exists('ep_prepare_post')) {
             //No elasticpress installed
             return;
         }
