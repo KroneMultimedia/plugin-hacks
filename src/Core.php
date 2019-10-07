@@ -264,6 +264,25 @@ class Core
 
     public function ep_formatted_args($args)
     {
+        if (isset($_GET['rekog_celebs'])) {
+            $args['post_filter']['bool']['must'][] = [
+                'term' => [
+                    'rekog_celebs.slug' => $_GET['rekog_celebs'],
+                ],
+                ];
+
+            return $args;
+        }
+        if (isset($_GET['rekog_persons'])) {
+            $args['post_filter']['bool']['must'][] = [
+                'term' => [
+                    'rekog_persons.slug' => $_GET['rekog_persons'],
+                ],
+                ];
+
+            return $args;
+        }
+
         if (! array_key_exists('bool', $args['query'])) {
             return $args;
         }
@@ -289,6 +308,7 @@ class Core
         //echo "<pre>";
         //echo json_encode($args);
         //exit;
+
         return $args;
     }
 
