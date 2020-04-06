@@ -81,7 +81,7 @@ class Core
 
         /// ELASITC PRESS
 
-        add_filter('acp/filtering/cache/seconds', function ($seconds) {
+        add_filter('acf/filtering/cache/seconds', function ($seconds) {
             return 86400 * 30;
         });
 
