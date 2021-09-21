@@ -193,6 +193,21 @@ class Core
         add_filter('media_library_show_video_playlist', function () {
             return false;
         });
+        add_filter('register_post_type_args', function($args, $post_type) {
+        //return $args;
+                if($post_type == "wp_template") {
+                      $args['rest_base'] = "wp_templates";
+                      $args["capability_type"] = ["wp_template", "wp_templates"];
+                      //$args["capabilities"] = [];
+                      //$args["rest_controller_class"] = "WP_REST_Posts_Controller";
+                      unset($args["rest_controller_class"]);
+
+                }
+                return $args;
+        }, 10, 2);
+        add_action('init',function() {
+               unregister_post_type( 'wp_template' );
+        });
     }
 
     public function krn_index_object_w($a, $b = null, $c = null)
