@@ -86,6 +86,11 @@ class Core
     {
         remove_action('init', 'wp_widgets_init', 1);
 
+        // some css fixes etc.
+        add_action('admin_enqueue_scripts', [$this, 'enqueue_scripts'], 10, 1);
+
+        add_filter('init', [$this, 'disable_editor_expand'], 10);
+
         //Disable ACF fields that are from DB - improves performance a lot
         add_filter('posts_pre_query', [$this, 'acf_posts_pre_query'], 15, 2);
 
@@ -400,7 +405,13 @@ class Core
         return preg_match("#^\!#", $q);
     }
 
-    /*
-     * /Elasticpress
-     */
+    public function enqueue_scripts() {
+        // cannot use plugin_dir_url(__FILE__) for mu-plugins
+        wp_enqueue_style('kmm-hacks-css', '/wp-content/mu-plugins/includes/kmm-hacks/assets/css/hacks.css');
+    }
+
+    public function disable_editor_expand() {
+        // disables "full screen mode" ("ablenkungsfreies schreiben"), default is "on" and it confuses editors
+        set_user_setting( 'editor_expand', 'off' );
+    }
 }
