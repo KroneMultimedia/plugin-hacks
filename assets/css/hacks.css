@@ -1,0 +1,5 @@
+
+/* external plugin wp-help has broken css - fix it here */
+.post-type-wp-help #postdivrich .wp-editor-area {
+    width: 100%;
+}

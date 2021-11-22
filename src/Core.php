@@ -2,12 +2,10 @@
 
 namespace KMM\Hacks;
 
-class Core
-{
+class Core {
     private $plugin_dir;
 
-    public function __construct($i18n)
-    {
+    public function __construct($i18n) {
         global $wpdb;
         $this->i18n = $i18n;
         $this->wpdb = $wpdb;
@@ -18,16 +16,13 @@ class Core
         $this->add_metabox();
     }
 
-    public function add_metabox()
-    {
+    public function add_metabox() {
     }
 
-    public function add_filters()
-    {
+    public function add_filters() {
     }
 
-    public function my_override_load_textdomain($override, $domain, $mofile)
-    {
+    public function my_override_load_textdomain($override, $domain, $mofile) {
         global $l10n;
 
         // check if $mofile exisiste and is readable
@@ -75,16 +70,19 @@ class Core
         return true;
     }
 
-    public function ep_bulk_index_posts_request_args($args, $body)
-    {
+    public function ep_bulk_index_posts_request_args($args, $body) {
         $args['timeout'] = 300000;
 
         return $args;
     }
 
-    public function add_actions()
-    {
+    public function add_actions() {
         remove_action('init', 'wp_widgets_init', 1);
+
+        // some css fixes etc.
+        add_action('admin_enqueue_scripts', [$this, 'enqueue_scripts'], 10, 1);
+
+        add_filter('init', [$this, 'disable_editor_expand'], 10);
 
         //Disable ACF fields that are from DB - improves performance a lot
         add_filter('posts_pre_query', [$this, 'acf_posts_pre_query'], 15, 2);
@@ -165,7 +163,7 @@ class Core
             foreach (get_post_types() as $type) {
                 $cache_key = _count_posts_cache_key($type, 'readable');
                 $counts = array_fill_keys(get_post_stati(), 1);
-                wp_cache_set($cache_key, (object)$counts, 'counts');
+                wp_cache_set($cache_key, (object) $counts, 'counts');
             }
         }, -1);
         add_action('admin_head', function () {
@@ -195,7 +193,7 @@ class Core
         });
         add_filter('register_post_type_args', function ($args, $post_type) {
             //return $args;
-            if ($post_type == 'wp_template') {
+            if ('wp_template' == $post_type) {
                 $args['rest_base'] = 'wp_templates';
                 $args['capability_type'] = ['wp_template', 'wp_templates'];
                 //$args["capabilities"] = [];
@@ -210,23 +208,21 @@ class Core
         });
     }
 
-    public function krn_index_object_w($a, $b = null, $c = null)
-    {
+    public function krn_index_object_w($a, $b = null, $c = null) {
         $this->krn_index_object($a);
     }
 
-    public function krn_index_object($post_id)
-    {
+    public function krn_index_object($post_id) {
         if (! function_exists('ep_prepare_post')) {
             //No elasticpress installed
             return;
         }
         $blocking = true;
         $post = get_post($post_id);
-        if ($post->post_status == 'auto-draft') {
+        if ('auto-draft' == $post->post_status) {
             return;
         }
-        if ($post->post_status == 'draft') {
+        if ('draft' == $post->post_status) {
             return;
         }
         if (empty($post)) {
@@ -236,13 +232,11 @@ class Core
         $response = ep_index_post($post_args, $blocking);
     }
 
-    public function acf_load_value($value, $post_id, $field)
-    {
+    public function acf_load_value($value, $post_id, $field) {
         return maybe_unserialize($value);
     }
 
-    public function ep_post_sync_args($args, $post_id)
-    {
+    public function ep_post_sync_args($args, $post_id) {
         $args['comment_status'] = absint($args['comment_status']);
         $args['ping_status'] = absint($args['ping_status']);
 
@@ -251,8 +245,7 @@ class Core
 
     //ACF querie disable
     //
-    public function debug_enabled()
-    {
+    public function debug_enabled() {
         if (defined('WP_DEBUG') && WP_DEBUG == true) {
             return true;
         }
@@ -260,9 +253,8 @@ class Core
         return false;
     }
 
-    public function acf_posts_pre_query($posts, \WP_Query $query)
-    {
-        if (is_object($query) && property_exists($query, 'query_vars') && $query->query_vars['post_type'] == 'acf-field-group' && ! $this->debug_enabled()) {
+    public function acf_posts_pre_query($posts, \WP_Query $query) {
+        if (is_object($query) && property_exists($query, 'query_vars') && 'acf-field-group' == $query->query_vars['post_type'] && ! $this->debug_enabled()) {
             return [];
         }
 
@@ -271,16 +263,14 @@ class Core
 
     //Heartbeat
     //
-    public function maybe_kill_heartbeat()
-    {
+    public function maybe_kill_heartbeat() {
         $current_screen = get_current_screen()->base;
-        if ($current_screen !== 'post') {
+        if ('post' !== $current_screen) {
             wp_deregister_script('heartbeat');
         }
     }
 
-    public function heartbeat_settings($settings)
-    {
+    public function heartbeat_settings($settings) {
         $settings['interval'] = 120; //Anything between 15-60
 
         return $settings;
@@ -295,20 +285,17 @@ class Core
      * Elasticpress
      *
      */
-    public function ep_index_post_request_path($path, $post)
-    {
+    public function ep_index_post_request_path($path, $post) {
         return $path . '?refresh=wait_for';
     }
 
-    public function ep_index_post_request_args($args, $post)
-    {
+    public function ep_index_post_request_args($args, $post) {
         $args['blocking'] = true;
 
         return $args;
     }
 
-    public function wildCardIt($s)
-    {
+    public function wildCardIt($s) {
         if ($this->isExtenendEPQuery($s)) {
             return $s;
         }
@@ -321,8 +308,7 @@ class Core
         return join(' ', $fin);
     }
 
-    public function ep_config_mapping($mapping)
-    {
+    public function ep_config_mapping($mapping) {
         /*
          *
         $mapping['settings']['analysis']['analyzer']['default']['filter'] = [  'standard','lowercase', 'edge_ngram'];
@@ -332,8 +318,7 @@ class Core
         return $mapping;
     }
 
-    public function ep_formatted_args($args)
-    {
+    public function ep_formatted_args($args) {
         if (isset($_GET['rekog_celebs'])) {
             $args['post_filter']['bool']['must'][] = [
                 'term' => [
@@ -382,8 +367,7 @@ class Core
         return $args;
     }
 
-    public function sanitizeEPQuery($q)
-    {
+    public function sanitizeEPQuery($q) {
         if ($this->isExtenendEPQuery($q)) {
             return preg_replace("#^\!#", '', $q);
         }
@@ -395,12 +379,17 @@ class Core
         );
     }
 
-    public function isExtenendEPQuery($q)
-    {
+    public function isExtenendEPQuery($q) {
         return preg_match("#^\!#", $q);
     }
 
-    /*
-     * /Elasticpress
-     */
+    public function enqueue_scripts() {
+        // cannot use plugin_dir_url(__FILE__) for mu-plugins
+        wp_enqueue_style('kmm-hacks-css', '/wp-content/mu-plugins/includes/kmm-hacks/assets/css/hacks.css');
+    }
+
+    public function disable_editor_expand() {
+        // disables "full screen mode" ("ablenkungsfreies schreiben"), default is "on" and it confuses editors
+        set_user_setting('editor_expand', 'off');
+    }
 }
