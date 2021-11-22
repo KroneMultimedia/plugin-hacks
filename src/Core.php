@@ -405,13 +405,15 @@ class Core
         return preg_match("#^\!#", $q);
     }
 
-    public function enqueue_scripts() {
+    public function enqueue_scripts()
+    {
         // cannot use plugin_dir_url(__FILE__) for mu-plugins
         wp_enqueue_style('kmm-hacks-css', '/wp-content/mu-plugins/includes/kmm-hacks/assets/css/hacks.css');
     }
 
-    public function disable_editor_expand() {
+    public function disable_editor_expand()
+    {
         // disables "full screen mode" ("ablenkungsfreies schreiben"), default is "on" and it confuses editors
-        set_user_setting( 'editor_expand', 'off' );
+        set_user_setting('editor_expand', 'off');
     }
 }
