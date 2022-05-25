@@ -210,8 +210,9 @@ class Core {
     }
 
     public function disable_term_count() {
-      wp_defer_term_counting(true);        
+        wp_defer_term_counting(true);
     }
+
     public function krn_index_object_w($a, $b = null, $c = null) {
         $this->krn_index_object($a);
     }
