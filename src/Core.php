@@ -83,6 +83,7 @@ class Core {
         add_action('admin_enqueue_scripts', [$this, 'enqueue_scripts'], 10, 1);
 
         add_filter('init', [$this, 'disable_editor_expand'], 10);
+        add_filter('init', [$this, 'disable_term_count'], 10);
 
         //Disable ACF fields that are from DB - improves performance a lot
         add_filter('posts_pre_query', [$this, 'acf_posts_pre_query'], 15, 2);
@@ -206,6 +207,10 @@ class Core {
         add_action('init', function () {
             unregister_post_type('wp_template');
         });
+    }
+
+    public function disable_term_count() {
+        wp_defer_term_counting(true);
     }
 
     public function krn_index_object_w($a, $b = null, $c = null) {
