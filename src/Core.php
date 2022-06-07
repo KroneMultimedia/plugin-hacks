@@ -82,13 +82,14 @@ class Core {
         // some css fixes etc.
         add_action('admin_enqueue_scripts', [$this, 'enqueue_scripts'], 10, 1);
 
-        add_filter('init', [$this, 'disable_editor_expand'], 10);
         add_filter('init', [$this, 'disable_term_count'], 10);
 
-        //Disable ACF fields that are from DB - improves performance a lot
+        add_filter('wp_editor_expand', [$this, 'filter_wp_editor_expand'], 10, 2);
+
+        // Disable ACF fields that are from DB - improves performance a lot
         add_filter('posts_pre_query', [$this, 'acf_posts_pre_query'], 15, 2);
 
-        //Remove Gutenberg Markting spam
+        // Remove Gutenberg Markting spam
         remove_action('try_gutenberg_panel', 'wp_try_gutenberg_panel');
 
         // disable Gutenberg completely
@@ -97,12 +98,12 @@ class Core {
         // disable for post types
         add_filter('use_block_editor_for_post_type', '__return_false', 10);
 
-        //Cache MO locale loading
-        //Taken from: https://www.it-swarm.dev/de/performance/verwenden-sie-override-load-textdomain-fuer-die-cache-uebersetzung-und-verbessern-sie-die-leistung/961933454/
-        //based on: https://blog.blackfire.io/improving-wordpress.html
+        // Cache MO locale loading
+        // Taken from: https://www.it-swarm.dev/de/performance/verwenden-sie-override-load-textdomain-fuer-die-cache-uebersetzung-und-verbessern-sie-die-leistung/961933454/
+        // based on: https://blog.blackfire.io/improving-wordpress.html
         add_filter('override_load_textdomain', [$this, 'my_override_load_textdomain'], 1, 3);
 
-        //Disable KMM KRoN in json requests
+        // Disable KMM KRoN in json requests
         add_filter('krn_kron_enabled', function () {
             if (apply_filters('krn_is_rest_api_request', false)) {
                 return false;
@@ -111,8 +112,8 @@ class Core {
             return true;
         });
 
-        //Elastic Search
-        //Reformat the query to support wildcards and order by date
+        // Elastic Search
+        // Reformat the query to support wildcards and order by date
         add_filter('ep_formatted_args', [$this, 'ep_formatted_args'], 1, 1);
         add_filter('ep_index_post_request_args', [$this, 'ep_index_post_request_args'], 1, 2);
         add_filter('ep_index_post_request_path', [$this, 'ep_index_post_request_path'], 1, 2);
@@ -120,7 +121,7 @@ class Core {
 
         add_filter('ep_config_mapping', [$this, 'ep_config_mapping']);
 
-        //workaround: https://github.com/10up/ElasticPress/pull/1158
+        // workaround: https://github.com/10up/ElasticPress/pull/1158
         add_filter('ep_post_sync_args', [$this, 'ep_post_sync_args'], 10, 2);
 
         add_filter('ep_post_sync_kill', function ($v, $args, $id) {
@@ -128,20 +129,20 @@ class Core {
         }, 999, 3);
 
         add_filter('save_post', [$this, 'krn_index_object'], 9999, 1);
-        //add_action( 'wp_insert_post', array( $this, 'krn_index_object_w' ), 999, 3 );
+        // add_action( 'wp_insert_post', array( $this, 'krn_index_object_w' ), 999, 3 );
         add_action('add_attachment', [$this, 'krn_index_object_w'], 999, 3);
         add_action('edit_attachment', [$this, 'krn_index_object_w'], 999, 3);
 
-        /// ELASITC PRESS
+        // / ELASITC PRESS
 
         add_filter('acp/filtering/cache/seconds', function ($seconds) {
             return 86400 * 30;
         });
 
-        //FIX OLD/legacy ACF entries that used to have double encoded values
+        // FIX OLD/legacy ACF entries that used to have double encoded values
         add_filter('acf/load_value', [$this, 'acf_load_value'], 10, 3);
 
-        //Disable comment count in admin-navigation
+        // Disable comment count in admin-navigation
         if (is_admin()) {
             add_filter('wp_count_comments', function ($counts, $post_id) {
                 if ($post_id) {
@@ -159,7 +160,7 @@ class Core {
             }, 10, 2);
         }
 
-        //Disable Article Counter - query runs for about 1-2 seconds in the edit.php list head
+        // Disable Article Counter - query runs for about 1-2 seconds in the edit.php list head
         add_filter('admin_init', function () {
             foreach (get_post_types() as $type) {
                 $cache_key = _count_posts_cache_key($type, 'readable');
@@ -174,12 +175,12 @@ class Core {
 
             echo $css;
         });
-        //Heartbeat is a bi** in large scale
+        // Heartbeat is a bi** in large scale
         add_action('admin_enqueue_scripts', [$this, 'maybe_kill_heartbeat'], 100);
-        //Handle WP-Heartbeat
+        // Handle WP-Heartbeat
         add_filter('heartbeat_settings', [$this, 'heartbeat_settings']);
 
-        //Media Library scaling issues
+        // Media Library scaling issues
         add_filter('disable_months_dropdown', function () {
             return true;
         });
@@ -193,12 +194,12 @@ class Core {
             return false;
         });
         add_filter('register_post_type_args', function ($args, $post_type) {
-            //return $args;
+            // return $args;
             if ('wp_template' == $post_type) {
                 $args['rest_base'] = 'wp_templates';
                 $args['capability_type'] = ['wp_template', 'wp_templates'];
-                //$args["capabilities"] = [];
-                //$args["rest_controller_class"] = "WP_REST_Posts_Controller";
+                // $args["capabilities"] = [];
+                // $args["rest_controller_class"] = "WP_REST_Posts_Controller";
                 unset($args['rest_controller_class']);
             }
 
@@ -219,7 +220,7 @@ class Core {
 
     public function krn_index_object($post_id) {
         if (! function_exists('ep_prepare_post')) {
-            //No elasticpress installed
+            // No elasticpress installed
             return;
         }
         $blocking = true;
@@ -248,7 +249,7 @@ class Core {
         return $args;
     }
 
-    //ACF querie disable
+    // ACF querie disable
     //
     public function debug_enabled() {
         if (defined('WP_DEBUG') && WP_DEBUG == true) {
@@ -266,7 +267,7 @@ class Core {
         return $posts;
     }
 
-    //Heartbeat
+    // Heartbeat
     //
     public function maybe_kill_heartbeat() {
         $current_screen = get_current_screen()->base;
@@ -276,7 +277,7 @@ class Core {
     }
 
     public function heartbeat_settings($settings) {
-        $settings['interval'] = 120; //Anything between 15-60
+        $settings['interval'] = 120; // Anything between 15-60
 
         return $settings;
     }
@@ -347,7 +348,7 @@ class Core {
             return $args;
         }
 
-        //Simplifie as fuck
+        // Simplifie as fuck
         //
         $qs = $args['query']['bool']['should'][0]['multi_match']['query'];
         $qs = $this->wildCardIt($qs);
@@ -361,13 +362,13 @@ class Core {
             'fuzziness' => 5,
           ],
         ];
-        //Reset
+        // Reset
         unset($args['query']);
         $args['query'] = $nq;
 
-        //echo "<pre>";
-        //echo json_encode($args);
-        //exit;
+        // echo "<pre>";
+        // echo json_encode($args);
+        // exit;
 
         return $args;
     }
@@ -393,8 +394,7 @@ class Core {
         wp_enqueue_style('kmm-hacks-css', '/wp-content/mu-plugins/includes/kmm-hacks/assets/css/hacks.css');
     }
 
-    public function disable_editor_expand() {
-        // disables "full screen mode" ("ablenkungsfreies schreiben"), default is "on" and it confuses editors
-        set_user_setting('editor_expand', 'off');
+    public function filter_wp_editor_expand($true, $post_type) {
+        return false;
     }
 }
