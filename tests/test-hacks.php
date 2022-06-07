@@ -5,7 +5,7 @@
 use KMM\Hacks\Core;
 
 class TestHacks extends \WP_UnitTestCase {
-    public function setUp() {
+    public function setUp(): void {
         // setup a rest server
         parent::setUp();
         $this->core = new Core('i18n');
@@ -18,7 +18,7 @@ class TestHacks extends \WP_UnitTestCase {
         $this->assertEquals(1, 1);
     }
 
-    public function tearDown() {
+    public function tearDown(): void {
         parent::tearDown();
     }
 }
