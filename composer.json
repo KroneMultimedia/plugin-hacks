@@ -11,10 +11,6 @@
     {
       "type": "gitlab",
       "url": "http://gitlab.krone.at/KRN/phpcs.git"
-    },
-    {
-      "type": "gitlab",
-      "url": "http://gitlab.krone.at/KRN/phpunitwp.git"
     }
   ],
   "require": {
@@ -42,7 +38,7 @@
   "require-dev": {
     "krn/php-cs-style": "*",
     "php-mock/php-mock": "^2.0",
-     "friendsofphp/php-cs-fixer": "^3.8",
-    "phpunit/phpunit": "dev-add-compatibility-with-php8-to-phpunit-7 as 7.*.x-dev"
+    "friendsofphp/php-cs-fixer": "^3.8",
+    "phpunit/phpunit": ">=8.5.23"
   }
 }
