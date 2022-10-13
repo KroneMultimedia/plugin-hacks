@@ -93,10 +93,10 @@ class Core {
         remove_action('try_gutenberg_panel', 'wp_try_gutenberg_panel');
 
         // disable Gutenberg completely
-        add_filter('use_block_editor_for_post', '__return_false', 10);
+        // add_filter('use_block_editor_for_post', '__return_false', 10);
 
         // disable for post types
-        add_filter('use_block_editor_for_post_type', '__return_false', 10);
+        // add_filter('use_block_editor_for_post_type', '__return_false', 10);
 
         // Cache MO locale loading
         // Taken from: https://www.it-swarm.dev/de/performance/verwenden-sie-override-load-textdomain-fuer-die-cache-uebersetzung-und-verbessern-sie-die-leistung/961933454/
