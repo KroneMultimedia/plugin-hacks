@@ -6,13 +6,13 @@
 namespace UNT;
 
 require_once __DIR__ . '/../../vendor/autoload.php';
-// Fake ENV
+
 define('KRN_HOST_API', 'test-api.krone.at');
 define('WP_HOME', 'test-www.krone.at');
 define('KRN_HOST_MOBIL', 'test-mobil.krone.at');
 define('KRN_IS_TESTING', 1);
 
-class UNTBootstrap {
+class bootstrap {
     public function __construct() {
         $_tests_dir = getenv('WP_TESTS_DIR');
         if (! $_tests_dir) {
@@ -37,4 +37,4 @@ class UNTBootstrap {
 
 // Start up the WP testing environment.
 
-$unt = new UNTBootstrap();
+$unt = new bootstrap();
