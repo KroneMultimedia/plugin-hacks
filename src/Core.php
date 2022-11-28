@@ -260,8 +260,11 @@ class Core {
     }
 
     public function acf_posts_pre_query($posts, \WP_Query $query) {
-        if (is_object($query) && property_exists($query, 'query_vars') && 'acf-field-group' == $query->query_vars['post_type'] && ! $this->debug_enabled()) {
-            return [];
+        // make it still work on dev
+        if (! defined('WP_ENV') || WP_ENV != 'local_dev') {
+            if (is_object($query) && property_exists($query, 'query_vars') && 'acf-field-group' == $query->query_vars['post_type'] && ! $this->debug_enabled()) {
+                return [];
+            }
         }
 
         return $posts;

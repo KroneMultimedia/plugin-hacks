@@ -1,44 +1,47 @@
 {
-  "name": "wordpress/plugin-hacks",
-  "type": "wordpress-muplugin",
-  "support": {
-    "src": "http://gitlab.krone.at/WordPress/plugin-hacks.git"
-  },
-  "extra": {
-    "installer-name": "kmm-hacks"
-  },
-  "repositories": [
-    {
-      "type": "gitlab",
-      "url": "http://gitlab.krone.at/KRN/phpcs.git"
+    "name": "wordpress/plugin-hacks",
+    "type": "wordpress-muplugin",
+    "support": {
+        "src": "http://gitlab.krone.at/WordPress/plugin-hacks.git"
+    },
+    "extra": {
+        "installer-name": "kmm-hacks"
+    },
+    "repositories": [
+        {
+            "type": "gitlab",
+            "url": "http://gitlab.krone.at/KRN/phpcs.git"
+        }
+    ],
+    "require": {
+        "php": ">=7.0.0",
+        "composer/installers": "~1.0",
+        "yoast/phpunit-polyfills": "^1.0"
+    },
+    "autoload": {
+        "classmap": [
+            "src/"
+        ]
+    },
+    "scripts": {
+        "cs-check": "vendor/bin/php-cs-fixer fix --verbose --diff --dry-run",
+        "cs-fix": "vendor/bin/php-cs-fixer fix --verbose --diff"
+    },
+    "config": {
+        "gitlab-domains": [
+            "gitlab.krone.at"
+        ],
+        "github-protocols": [
+            "https"
+        ],
+        "secure-http": false,
+        "allow-plugins": {
+            "composer/installers": true
+        }
+    },
+    "require-dev": {
+        "krn/php-cs-style": "*",
+        "php-mock/php-mock": "^2.1",
+        "phpunit/phpunit": ">=8.5.23"
     }
-  ],
-  "require": {
-    "php": ">=7.0.0",
-    "composer/installers": "~1.0",
-    "yoast/phpunit-polyfills": "^1.0"
-  },
-  "autoload": {
-    "classmap": [
-      "src/"
-    ]
-  },
-  "scripts": {
-    "cs-check": "vendor/bin/php-cs-fixer fix --verbose --diff --dry-run",
-    "cs-fix": "vendor/bin/php-cs-fixer fix --verbose --diff"
-  },
-  "config": {
-    "gitlab-domains": ["gitlab.krone.at"],
-    "github-protocols": ["https"],
-    "secure-http": false,
-    "allow-plugins": {
-      "composer/installers": true
-    }
-  },
-  "require-dev": {
-    "krn/php-cs-style": "*",
-    "php-mock/php-mock": "^2.0",
-    "friendsofphp/php-cs-fixer": "^3.8",
-    "phpunit/phpunit": ">=8.5.23"
-  }
 }
