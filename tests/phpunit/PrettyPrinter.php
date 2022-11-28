@@ -26,7 +26,7 @@ class PrettyPrinter extends \PHPUnit\TextUI\ResultPrinter implements \PHPUnit\Fr
     protected function printDefectTrace(\PHPUnit\Framework\TestFailure $defect): void {
         $this->write($this->formatExceptionMsg($defect->getExceptionAsString()));
         $trace = \PHPUnit\Util\Filter::getFilteredStacktrace(
-          $defect->thrownException()
+            $defect->thrownException()
         );
         if (! empty($trace)) {
             $this->write("\n" . $trace);
@@ -34,10 +34,10 @@ class PrettyPrinter extends \PHPUnit\TextUI\ResultPrinter implements \PHPUnit\Fr
         $e = $defect->thrownException()->getPrevious();
         while ($e) {
             $this->write(
-            "\nCaused by\n" .
-            \PHPUnit\Framework_TestFailure::exceptionToString($e) . "\n" .
-            \PHPUnit\Util_Filter::getFilteredStacktrace($e)
-          );
+                "\nCaused by\n" .
+                \PHPUnit\Framework_TestFailure::exceptionToString($e) . "\n" .
+                \PHPUnit\Util_Filter::getFilteredStacktrace($e)
+            );
             $e = $e->getPrevious();
         }
     }
@@ -48,7 +48,7 @@ class PrettyPrinter extends \PHPUnit\TextUI\ResultPrinter implements \PHPUnit\Fr
      * @param string $message to print
      * @param string $color   optional color (if supported by console)
      */
-    private function out($message, $color='', $linebreak=false) {
+    private function out($message, $color = '', $linebreak = false) {
         echo($color ? $this->formatWithColor($color, $message) : $message) . ($linebreak ? "\n" : '');
     }
 
@@ -101,9 +101,9 @@ class PrettyPrinter extends \PHPUnit\TextUI\ResultPrinter implements \PHPUnit\Fr
         if (! $this->headerPrinted) {
             $header = '██████╗ ██╗  ██╗██████╗ ██╗   ██╗███╗   ██╗██╗████████╗
 ██╔══██╗██║  ██║██╔══██╗██║   ██║████╗  ██║██║╚══██╔══╝
-██████╔╝███████║██████╔╝██║   ██║██╔██╗ ██║██║   ██║
-██╔═══╝ ██╔══██║██╔═══╝ ██║   ██║██║╚██╗██║██║   ██║
-██║     ██║  ██║██║     ╚██████╔╝██║ ╚████║██║   ██║
+██████╔╝███████║██████╔╝██║   ██║██╔██╗ ██║██║   ██║   
+██╔═══╝ ██╔══██║██╔═══╝ ██║   ██║██║╚██╗██║██║   ██║   
+██║     ██║  ██║██║     ╚██████╔╝██║ ╚████║██║   ██║   
 ╚═╝     ╚═╝  ╚═╝╚═╝      ╚═════╝ ╚═╝  ╚═══╝╚═╝   ╚═╝  ';
             $this->out($header, 'fg-blue', true);
             $this->out(' - - - - T E S T   A L L   T H E   T H I N G S - - - - ', 'fg-blue', true);
