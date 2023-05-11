@@ -208,6 +208,22 @@ class Core {
         add_action('init', function () {
             unregister_post_type('wp_template');
         });
+
+        // disable nonce check for wp-json requests
+        add_action('rest_api_init', [$this, 'disable_rest_api_nonce_check']);
+    }
+
+    // disable nonce check for wp-json requests
+    public function disable_rest_api_nonce_check() {
+        if (defined('REST_REQUEST') && REST_REQUEST) {
+            add_filter('rest_authentication_errors', function ($result) {
+                if (empty($result) && ! empty($_SERVER['REQUEST_URI']) && false !== strpos($_SERVER['REQUEST_URI'], '/wp-json/')) {
+                    return true;
+                }
+
+                return $result;
+            });
+        }
     }
 
     public function disable_term_count() {
