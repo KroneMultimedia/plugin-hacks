@@ -252,12 +252,6 @@ class Core
         }
         $blocking = true;
         $post = get_post($post_id);
-        if ('auto-draft' == $post->post_status) {
-            return;
-        }
-        if ('draft' == $post->post_status) {
-            return;
-        }
         if (empty($post)) {
             return false;
         }
