@@ -6,8 +6,7 @@ class Core
 {
     private $plugin_dir;
 
-    public function __construct($i18n)
-    {
+    public function __construct($i18n) {
         global $wpdb;
         $this->i18n = $i18n;
         $this->wpdb = $wpdb;
@@ -18,16 +17,13 @@ class Core
         $this->add_metabox();
     }
 
-    public function add_metabox()
-    {
+    public function add_metabox() {
     }
 
-    public function add_filters()
-    {
+    public function add_filters() {
     }
 
-    public function my_override_load_textdomain($override, $domain, $mofile)
-    {
+    public function my_override_load_textdomain($override, $domain, $mofile) {
         global $l10n;
 
         // check if $mofile exisiste and is readable
@@ -75,15 +71,13 @@ class Core
         return true;
     }
 
-    public function ep_bulk_index_posts_request_args($args, $body)
-    {
+    public function ep_bulk_index_posts_request_args($args, $body) {
         $args['timeout'] = 300000;
 
         return $args;
     }
 
-    public function add_actions()
-    {
+    public function add_actions() {
         remove_action('init', 'wp_widgets_init', 1);
 
         // some css fixes etc.
@@ -221,8 +215,7 @@ class Core
     }
 
     // disable nonce check for wp-json requests
-    public function disable_rest_api_nonce_check()
-    {
+    public function disable_rest_api_nonce_check() {
         if (defined('REST_REQUEST') && REST_REQUEST) {
             add_filter('rest_authentication_errors', function ($result) {
                 if (empty($result) && ! empty($_SERVER['REQUEST_URI']) && false !== strpos($_SERVER['REQUEST_URI'], '/wp-json/')) {
@@ -234,18 +227,15 @@ class Core
         }
     }
 
-    public function disable_term_count()
-    {
+    public function disable_term_count() {
         wp_defer_term_counting(true);
     }
 
-    public function krn_index_object_w($a, $b = null, $c = null)
-    {
+    public function krn_index_object_w($a, $b = null, $c = null) {
         $this->krn_index_object($a);
     }
 
-    public function krn_index_object($post_id)
-    {
+    public function krn_index_object($post_id) {
         if (! function_exists('ep_prepare_post')) {
             // No elasticpress installed
             return;
@@ -259,13 +249,11 @@ class Core
         $response = ep_index_post($post_args, $blocking);
     }
 
-    public function acf_load_value($value, $post_id, $field)
-    {
+    public function acf_load_value($value, $post_id, $field) {
         return maybe_unserialize($value);
     }
 
-    public function ep_post_sync_args($args, $post_id)
-    {
+    public function ep_post_sync_args($args, $post_id) {
         $args['comment_status'] = absint($args['comment_status']);
         $args['ping_status'] = absint($args['ping_status']);
 
@@ -274,8 +262,7 @@ class Core
 
     // ACF querie disable
     //
-    public function debug_enabled()
-    {
+    public function debug_enabled() {
         if (defined('WP_DEBUG') && WP_DEBUG == true) {
             return true;
         }
@@ -283,8 +270,7 @@ class Core
         return false;
     }
 
-    public function acf_posts_pre_query($posts, \WP_Query $query)
-    {
+    public function acf_posts_pre_query($posts, \WP_Query $query) {
         // make it still work on dev
         if (! defined('WP_ENV') || WP_ENV != 'local_dev') {
             if (is_object($query) && property_exists($query, 'query_vars') && 'acf-field-group' == $query->query_vars['post_type'] && ! $this->debug_enabled()) {
@@ -297,16 +283,14 @@ class Core
 
     // Heartbeat
     //
-    public function maybe_kill_heartbeat()
-    {
+    public function maybe_kill_heartbeat() {
         $current_screen = get_current_screen()->base;
         if ('post' !== $current_screen) {
             wp_deregister_script('heartbeat');
         }
     }
 
-    public function heartbeat_settings($settings)
-    {
+    public function heartbeat_settings($settings) {
         $settings['interval'] = 120; // Anything between 15-60
 
         return $settings;
@@ -321,20 +305,17 @@ class Core
      * Elasticpress
      *
      */
-    public function ep_index_post_request_path($path, $post)
-    {
+    public function ep_index_post_request_path($path, $post) {
         return $path . '?refresh=wait_for';
     }
 
-    public function ep_index_post_request_args($args, $post)
-    {
+    public function ep_index_post_request_args($args, $post) {
         $args['blocking'] = true;
 
         return $args;
     }
 
-    public function wildCardIt($s)
-    {
+    public function wildCardIt($s) {
         if ($this->isExtenendEPQuery($s)) {
             return $s;
         }
@@ -347,8 +328,7 @@ class Core
         return join(' ', $fin);
     }
 
-    public function ep_config_mapping($mapping)
-    {
+    public function ep_config_mapping($mapping) {
         /*
          *
         $mapping['settings']['analysis']['analyzer']['default']['filter'] = [  'standard','lowercase', 'edge_ngram'];
@@ -358,8 +338,7 @@ class Core
         return $mapping;
     }
 
-    public function ep_formatted_args($args)
-    {
+    public function ep_formatted_args($args) {
         if (isset($_GET['rekog_celebs'])) {
             $args['post_filter']['bool']['must'][] = [
                 'term' => [
@@ -408,8 +387,7 @@ class Core
         return $args;
     }
 
-    public function sanitizeEPQuery($q)
-    {
+    public function sanitizeEPQuery($q) {
         if ($this->isExtenendEPQuery($q)) {
             return preg_replace("#^\!#", '', $q);
         }
@@ -421,19 +399,16 @@ class Core
         );
     }
 
-    public function isExtenendEPQuery($q)
-    {
+    public function isExtenendEPQuery($q) {
         return preg_match("#^\!#", $q);
     }
 
-    public function enqueue_scripts()
-    {
+    public function enqueue_scripts() {
         // cannot use plugin_dir_url(__FILE__) for mu-plugins
         wp_enqueue_style('kmm-hacks-css', '/wp-content/mu-plugins/includes/kmm-hacks/assets/css/hacks.css');
     }
 
-    public function filter_wp_editor_expand($true, $post_type)
-    {
+    public function filter_wp_editor_expand($true, $post_type) {
         return false;
     }
 }
