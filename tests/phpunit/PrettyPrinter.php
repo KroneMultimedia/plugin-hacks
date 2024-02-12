@@ -50,7 +50,7 @@ class PrettyPrinter extends \PHPUnit\TextUI\ResultPrinter implements \PHPUnit\Fr
      * @param string $color   optional color (if supported by console)
      */
     private function out($message, $color = '', $linebreak = false) {
-        echo($color ? $this->formatWithColor($color, $message) : $message) . ($linebreak ? "\n" : '');
+        echo ($color ? $this->formatWithColor($color, $message) : $message) . ($linebreak ? "\n" : '');
     }
 
     /**

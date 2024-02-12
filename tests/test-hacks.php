@@ -4,7 +4,7 @@
  */
 use KMM\Hacks\Core;
 
-class TestHacks extends \WP_UnitTestCase
+class TestHacks extends WP_UnitTestCase
 {
     public function setUp(): void {
         // setup a rest server
