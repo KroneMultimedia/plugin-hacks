@@ -75,7 +75,7 @@ class PrettyPrinter extends \PHPUnit\TextUI\ResultPrinter implements \PHPUnit\Fr
         }
         $this->lastTestFailed = false;
         // custom printing code
-        if ('PHPUnit\Framework\TestSuite' == get_class($test)) {
+        if (get_class($test) == 'PHPUnit\Framework\TestSuite') {
             // this occurs when the test suite setup has thrown an error
             $this->out(' SETUP FAIL', 'fg-red', true);
         } elseif ($test->hasFailed()) {
@@ -111,13 +111,13 @@ class PrettyPrinter extends \PHPUnit\TextUI\ResultPrinter implements \PHPUnit\Fr
             $this->out('', '', true);
             $this->headerPrinted = true;
         }
-        if ('PHPUnit' != $suite->getName()) {
+        if ($suite->getName() != 'PHPUnit') {
             $this->out("BEGIN SUITE '" . $this->prettySuiteName($suite->getName()) . "'\n");
         }
     }
 
     public function endTestSuite(\PHPUnit\Framework\TestSuite $suite): void {
-        if ('PHPUnit' != $suite->getName()) {
+        if ($suite->getName() != 'PHPUnit') {
             $this->out("END SUITE '" . $this->prettySuiteName($suite->getName()) . "'\n\n");
         }
     }
