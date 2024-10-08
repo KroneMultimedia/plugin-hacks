@@ -196,7 +196,7 @@ class Core
         });
         add_filter('register_post_type_args', function ($args, $post_type) {
             // return $args;
-            if ('wp_template' == $post_type) {
+            if ($post_type == 'wp_template') {
                 $args['rest_base'] = 'wp_templates';
                 $args['capability_type'] = ['wp_template', 'wp_templates'];
                 // $args["capabilities"] = [];
@@ -218,7 +218,7 @@ class Core
     public function disable_rest_api_nonce_check() {
         if (defined('REST_REQUEST') && REST_REQUEST) {
             add_filter('rest_authentication_errors', function ($result) {
-                if (empty($result) && ! empty($_SERVER['REQUEST_URI']) && false !== strpos($_SERVER['REQUEST_URI'], '/wp-json/')) {
+                if (empty($result) && ! empty($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], '/wp-json/') !== false) {
                     return true;
                 }
 
@@ -232,8 +232,8 @@ class Core
     }
 
     public function krn_index_object_w($a, $b = null, $c = null) {
-        if(isset($_SERVER["X_KRN_SKIP_DOUBLE_INDEX")) {
-          return;
+        if (isset($_SERVER['X_KRN_SKIP_DOUBLE_INDEX'])) {
+            return;
         }
         $this->krn_index_object($a);
     }
@@ -276,7 +276,7 @@ class Core
     public function acf_posts_pre_query($posts, \WP_Query $query) {
         // make it still work on dev
         if (! defined('WP_ENV') || WP_ENV != 'local_dev') {
-            if (is_object($query) && property_exists($query, 'query_vars') && 'acf-field-group' == $query->query_vars['post_type'] && ! $this->debug_enabled()) {
+            if (is_object($query) && property_exists($query, 'query_vars') && $query->query_vars['post_type'] == 'acf-field-group' && ! $this->debug_enabled()) {
                 return [];
             }
         }
@@ -288,7 +288,7 @@ class Core
     //
     public function maybe_kill_heartbeat() {
         $current_screen = get_current_screen()->base;
-        if ('post' !== $current_screen) {
+        if ($current_screen !== 'post') {
             wp_deregister_script('heartbeat');
         }
     }
@@ -347,7 +347,7 @@ class Core
                 'term' => [
                     'rekog_celebs.slug' => $_GET['rekog_celebs'],
                 ],
-                ];
+            ];
 
             return $args;
         }
@@ -356,7 +356,7 @@ class Core
                 'term' => [
                     'rekog_persons.slug' => $_GET['rekog_persons'],
                 ],
-                ];
+            ];
 
             return $args;
         }
@@ -371,13 +371,13 @@ class Core
         $qs = $this->wildCardIt($qs);
         $qs = $this->sanitizeEPQuery($qs);
         $nq = [
-          'query_string' => [
-            'default_field' => 'post_title.post_title',
-            'query' => $qs,
-            'default_operator' => 'AND',
-            'analyze_wildcard' => true,
-            'fuzziness' => 5,
-          ],
+            'query_string' => [
+                'default_field' => 'post_title.post_title',
+                'query' => $qs,
+                'default_operator' => 'AND',
+                'analyze_wildcard' => true,
+                'fuzziness' => 5,
+            ],
         ];
         // Reset
         unset($args['query']);
