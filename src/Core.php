@@ -232,7 +232,7 @@ class Core
     }
 
     public function krn_index_object_w($a, $b = null, $c = null) {
-        if (isset($_SERVER['X_KRN_SKIP_DOUBLE_INDEX'])) {
+        if (isset($_SERVER['HTTP_X_KRN_SKIP_DOUBLE_INDEX'])) {
             return;
         }
         $this->krn_index_object($a);
