@@ -134,6 +134,8 @@ class Core
         add_action('add_attachment', [$this, 'krn_index_object_w'], 999, 3);
         add_action('edit_attachment', [$this, 'krn_index_object_w'], 999, 3);
 
+        add_action('krn_index_object', [$this, 'krn_index_object'], 9999, 1);
+
         // / ELASITC PRESS
 
         add_filter('acp/filtering/cache/seconds', function ($seconds) {
