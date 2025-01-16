@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @covers \KMM\Hacks\Core
  */
