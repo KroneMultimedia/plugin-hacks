@@ -129,7 +129,7 @@ class Core
             return true;
         }, 999, 3);
 
-        add_filter('save_post', [$this, 'krn_index_object'], 9999, 1);
+        add_filter('acf/save_post', [$this, 'krn_index_object'], 9999, 1);
         // add_action( 'wp_insert_post', array( $this, 'krn_index_object_w' ), 999, 3 );
         add_action('add_attachment', [$this, 'krn_index_object_w'], 999, 3);
         add_action('edit_attachment', [$this, 'krn_index_object_w'], 999, 3);
