@@ -165,6 +165,12 @@ class Core
             }, 10, 2);
         }
 
+        if (isset($_SERVER['HTTP_X_KRN_SKIP_DOUBLE_INDEX'])) {
+            add_filter('intermediate_image_sizes_advanced', function ($sizes) {
+                return [];
+            });
+        }
+
         // Disable Article Counter - query runs for about 1-2 seconds in the edit.php list head
         add_filter('admin_init', function () {
             foreach (get_post_types() as $type) {
@@ -236,9 +242,6 @@ class Core
     }
 
     public function krn_index_object_w($a, $b = null, $c = null) {
-        if (isset($_SERVER['HTTP_X_KRN_SKIP_DOUBLE_INDEX'])) {
-            return;
-        }
         $this->krn_index_object($a);
     }
 
