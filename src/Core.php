@@ -166,9 +166,12 @@ class Core
         }
 
         if (isset($_SERVER['HTTP_X_KRN_SKIP_DOUBLE_INDEX'])) {
-            add_filter('intermediate_image_sizes_advanced', function ($sizes) {
-                return [];
-            });
+            add_filter('imsanity_skip_image', function ($skip, $filename) {
+                return true;
+            }, 10, 2);
+            /* add_filter('intermediate_image_sizes_advanced', function ($sizes) { */
+            /*     return []; */
+            /* }); */
         }
 
         // Disable Article Counter - query runs for about 1-2 seconds in the edit.php list head
