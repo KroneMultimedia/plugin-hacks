@@ -246,7 +246,7 @@ class Core
         $blocking = true;
         $post = get_post($post_id);
         if (empty($post)) {
-            continue;
+            return;
         }
         $post_args = ep_prepare_post($post_id);
         ep_index_post($post_args, $blocking);
