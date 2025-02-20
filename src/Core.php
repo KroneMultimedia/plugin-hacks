@@ -6,6 +6,8 @@ class Core
 {
     private $plugin_dir;
 
+    private static $queued_posts = [];
+
     public function __construct($i18n) {
         global $wpdb;
         $this->i18n = $i18n;
@@ -240,18 +242,48 @@ class Core
         $this->krn_index_object($a);
     }
 
-    public function krn_index_object($post_id) {
-        if (! function_exists('ep_prepare_post')) {
-            // No elasticpress installed
-            return;
-        }
+    public function raw_index_post($post_id) {
         $blocking = true;
         $post = get_post($post_id);
         if (empty($post)) {
-            return false;
+            continue;
         }
         $post_args = ep_prepare_post($post_id);
-        $response = ep_index_post($post_args, $blocking);
+        ep_index_post($post_args, $blocking);
+    }
+
+    public function krn_index_object($post_id) {
+        if (! function_exists('ep_prepare_post')) {
+            return;
+        }
+
+        // IF we are run via CLI, shutdown might not work, and runtime is not so crucical anyway
+        if (defined('WP_CLI') && WP_CLI) {
+            $this->raw_index_post($post_id);
+
+            return;
+        }
+
+        // Queue this post_id if not already queued
+        if (! in_array($post_id, self::$queued_posts)) {
+            self::$queued_posts[] = $post_id;
+
+            // Only add shutdown action once
+            if (count(self::$queued_posts) === 1) {
+                add_action('shutdown', [$this, 'process_queued_posts']);
+            }
+        }
+    }
+
+    public function process_queued_posts() {
+        if (! function_exists('ep_prepare_post')) {
+            return;
+        }
+        foreach (self::$queued_posts as $post_id) {
+            $this->raw_index_post($post_id);
+        }
+
+        self::$queued_posts = [];
     }
 
     public function acf_load_value($value, $post_id, $field) {
