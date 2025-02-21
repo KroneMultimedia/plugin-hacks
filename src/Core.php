@@ -166,34 +166,15 @@ class Core
         }
 
         if (isset($_SERVER['HTTP_X_KRN_SKIP_DOUBLE_INDEX'])) {
-            // Disable thumbnails on NGEN import
             add_filter('imsanity_skip_image', function ($skip, $filename) {
                 return true;
             }, 10, 2);
             add_filter('intermediate_image_sizes_advanced', function ($sizes) {
-                return [];
+                return [
+                    'thumbnail' => $sizes['thumbnail'],
+                ];
             });
         }
-
-        // takes care of thumbnail generation, should end up beeing done in cron
-        add_action('krn_recreate_thumbs', function ($attachment_id) {
-            // Schedule the cron if not already scheduled
-            if (! wp_next_scheduled('krn_regenerate_thumbnails_cron', [$attachment_id])) {
-                wp_schedule_single_event(
-                    time() + 30, // 30 seconds from now
-                    'krn_regenerate_thumbnails_cron',
-                    [$attachment_id]
-                );
-            }
-        });
-        add_action('krn_regenerate_thumbnails_cron', function ($attachment_id) {
-            $file = get_attached_file($attachment_id);
-
-            if ($file) {
-                $metadata = wp_generate_attachment_metadata($attachment_id, $file);
-                wp_update_attachment_metadata($attachment_id, $metadata);
-            }
-        });
 
         // Disable Article Counter - query runs for about 1-2 seconds in the edit.php list head
         add_filter('admin_init', function () {
@@ -307,7 +288,6 @@ class Core
             return;
         }
         foreach (self::$queued_posts as $post_id) {
-            do_action('krn_recreate_thumbs', $post_id);
             $this->raw_index_post($post_id);
         }
 
