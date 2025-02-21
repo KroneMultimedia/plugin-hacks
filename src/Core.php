@@ -166,6 +166,9 @@ class Core
         }
 
         if (isset($_SERVER['HTTP_X_KRN_SKIP_DOUBLE_INDEX'])) {
+            add_filter('wp_image_editors', function ($editors) {
+                return ['WP_Image_Editor_GD'];
+            });
             add_filter('imsanity_skip_image', function ($skip, $filename) {
                 return true;
             }, 10, 2);
