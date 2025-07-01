@@ -305,19 +305,22 @@ class Core
         $args['comment_status'] = absint($args['comment_status']);
         $args['ping_status'] = absint($args['ping_status']);
 
-        // Add ALL term metadata for all taxonomies
+        // Add ALL term metadata at root level to avoid mapping conflicts
         if (! empty($args['terms'])) {
-            foreach ($args['terms'] as $taxonomy => &$terms) {
-                foreach ($terms as &$term) {
+            foreach ($args['terms'] as $taxonomy => $terms) {
+                foreach ($terms as $term) {
                     // Get ALL metadata for this term
                     $term_meta = get_term_meta($term['term_id']);
 
-                    // Flatten single-value arrays for easier searching
-                    foreach ($term_meta as $key => $value) {
-                        if (is_array($value) && count($value) === 1) {
-                            $term[$key] = $value[0];
-                        } else {
-                            $term[$key] = $value;
+                    // Add metadata as root-level fields
+                    if (! empty($term_meta)) {
+                        foreach ($term_meta as $key => $value) {
+                            $prefixed_key = 'term_' . $taxonomy . '_' . $key;
+                            if (is_array($value) && count($value) === 1) {
+                                $args[$prefixed_key] = maybe_unserialize($value[0]);
+                            } else {
+                                $args[$prefixed_key] = $value;
+                            }
                         }
                     }
                 }
