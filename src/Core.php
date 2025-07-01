@@ -305,6 +305,25 @@ class Core
         $args['comment_status'] = absint($args['comment_status']);
         $args['ping_status'] = absint($args['ping_status']);
 
+        // Add ALL term metadata for all taxonomies
+        if (!empty($args['terms'])) {
+            foreach ($args['terms'] as $taxonomy => &$terms) {
+                foreach ($terms as &$term) {
+                    // Get ALL metadata for this term
+                    $term_meta = get_term_meta($term['term_id']);
+                    
+                    // Flatten single-value arrays for easier searching
+                    foreach ($term_meta as $key => $value) {
+                        if (is_array($value) && count($value) === 1) {
+                            $term[$key] = $value[0];
+                        } else {
+                            $term[$key] = $value;
+                        }
+                    }
+                }
+            }
+        }
+
         return $args;
     }
 
